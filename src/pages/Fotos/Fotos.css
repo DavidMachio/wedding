@@ -48,6 +48,18 @@
 .galeria-feedback {
   font-size: 14px;
   text-align: center;
+  max-width: 460px;
+  line-height: 1.5;
+}
+
+.subida-estado {
+  font-size: 14px;
+  text-align: center;
+  color: var(--primary);
+}
+
+.subida-mensaje {
+  color: #9b1c1c;
 }
 
 .article-fotos {
@@ -80,6 +92,15 @@
   opacity: 0.6;
 }
 
+.foto-card-processing img {
+  opacity: 0.6;
+}
+
+.foto-card-error {
+  outline: 2px solid #b42318;
+  outline-offset: -2px;
+}
+
 .foto-card-estado {
   position: absolute;
   left: 50%;
@@ -91,6 +112,15 @@
   font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.foto-card-estado-error {
+  width: calc(100% - 20px);
+  background-color: rgba(180, 35, 24, 0.92);
+  text-align: center;
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: 1.3;
 }
 
 @media (max-width: 600px) {

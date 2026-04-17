@@ -3,16 +3,20 @@ import "./Fotos.css";
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME?.trim();
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET?.trim();
-const GALLERY_TAG =
-  import.meta.env.VITE_CLOUDINARY_GALLERY_TAG?.trim() || "wedding-gallery";
 const FOLDER = import.meta.env.VITE_CLOUDINARY_FOLDER?.trim();
+const GALLERY_KEY =
+  import.meta.env.VITE_CLOUDINARY_GALLERY_TAG?.trim() ||
+  FOLDER ||
+  "wedding-gallery";
 
 const buildDeliveryUrl = (resource, transformations) => {
   if (!CLOUD_NAME || !resource?.public_id || !resource?.format) {
     return resource?.secure_url || "";
   }
 
-  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${transformations}/${resource.public_id}.${resource.format}`;
+  const versionSegment = resource.version ? `v${resource.version}/` : "";
+
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${transformations}/${versionSegment}${resource.public_id}.${resource.format}`;
 };
 
 const normalizeImage = (resource) => ({
@@ -20,7 +24,10 @@ const normalizeImage = (resource) => ({
   alt: resource.original_filename || "Foto de la boda",
   createdAt: resource.created_at || "",
   fullUrl: buildDeliveryUrl(resource, "f_auto,q_auto,w_1600"),
-  thumbUrl: buildDeliveryUrl(resource, "f_auto,q_auto,c_fill,g_auto,w_700,h_700"),
+  thumbUrl: buildDeliveryUrl(resource, "f_auto,q_auto,c_fill,g_auto,w_420,h_420"),
+  sourceUrl: resource.secure_url || "",
+  status: "ready",
+  errorMessage: "",
 });
 
 const createPreviewImage = (file) => {
@@ -33,29 +40,60 @@ const createPreviewImage = (file) => {
     fullUrl: previewUrl,
     thumbUrl: previewUrl,
     isLocalPreview: true,
-    isUploading: true,
+    status: "uploading",
+    errorMessage: "",
   };
 };
+
+const preloadImage = (src) =>
+  new Promise((resolve, reject) => {
+    if (!src) {
+      reject(new Error("Missing image source"));
+      return;
+    }
+
+    const image = new Image();
+    image.onload = () => resolve(src);
+    image.onerror = () => reject(new Error("Image preload failed"));
+    image.src = src;
+  });
 
 const Fotos = () => {
   const inputRef = useRef(null);
   const [images, setImages] = useState([]);
   const [galleryLoading, setGalleryLoading] = useState(true);
+  const [galleryRefreshing, setGalleryRefreshing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [galleryError, setGalleryError] = useState("");
   const [uploadError, setUploadError] = useState("");
+  const [uploadSummary, setUploadSummary] = useState({
+    total: 0,
+    completed: 0,
+  });
 
   const isConfigured = Boolean(CLOUD_NAME && UPLOAD_PRESET);
 
   const mergeImages = (nextImages) => {
     setImages((currentImages) => {
-      const merged = [...nextImages, ...currentImages];
-      const uniqueImages = merged.filter(
-        (image, index, array) =>
-          index === array.findIndex((candidate) => candidate.id === image.id),
-      );
+      const mergedMap = new Map();
 
-      return uniqueImages.sort(
+      [...nextImages, ...currentImages].forEach((image) => {
+        const previousImage = mergedMap.get(image.id);
+
+        if (!previousImage) {
+          mergedMap.set(image.id, image);
+          return;
+        }
+
+        const nextImage =
+          previousImage.status === "uploading" && image.status === "ready"
+            ? image
+            : previousImage;
+
+        mergedMap.set(image.id, nextImage);
+      });
+
+      return Array.from(mergedMap.values()).sort(
         (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
       );
     });
@@ -67,10 +105,46 @@ const Fotos = () => {
     );
   };
 
-  const removePreviewImage = (previewId) => {
+  const updatePreviewStatus = (previewId, status, errorMessage = "") => {
     setImages((currentImages) =>
-      currentImages.filter((image) => image.id !== previewId),
+      currentImages.map((image) =>
+        image.id === previewId
+          ? {
+              ...image,
+              status,
+              errorMessage,
+            }
+          : image,
+      ),
     );
+  };
+
+  const syncGallery = (remoteImages) => {
+    setImages((currentImages) => {
+      const localTransientImages = currentImages.filter(
+        (image) =>
+          image.isLocalPreview ||
+          image.status === "error" ||
+          image.status === "uploading" ||
+          image.status === "processing",
+      );
+
+      const knownReadyImages = currentImages.filter(
+        (image) => !image.isLocalPreview && image.status === "ready",
+      );
+
+      const mergedMap = new Map();
+
+      [...remoteImages, ...knownReadyImages, ...localTransientImages].forEach((image) => {
+        if (!mergedMap.has(image.id)) {
+          mergedMap.set(image.id, image);
+        }
+      });
+
+      return Array.from(mergedMap.values()).sort(
+        (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+      );
+    });
   };
 
   const loadGallery = async () => {
@@ -83,11 +157,15 @@ const Fotos = () => {
     }
 
     try {
-      setGalleryLoading(true);
+      if (images.length === 0) {
+        setGalleryLoading(true);
+      } else {
+        setGalleryRefreshing(true);
+      }
       setGalleryError("");
 
       const response = await fetch(
-        `https://res.cloudinary.com/${CLOUD_NAME}/image/list/${encodeURIComponent(GALLERY_TAG)}.json?${Date.now()}`,
+        `https://res.cloudinary.com/${CLOUD_NAME}/image/list/${encodeURIComponent(GALLERY_KEY)}.json?${Date.now()}`,
       );
 
       if (!response.ok) {
@@ -100,13 +178,14 @@ const Fotos = () => {
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
         .map(normalizeImage);
 
-      setImages(parsedImages);
+      syncGallery(parsedImages);
     } catch (error) {
       setGalleryError(
-        "No he podido leer las imagenes desde Cloudinary. Revisa que la etiqueta exista y que el listado JSON este habilitado en tu cuenta.",
+        "No he podido cargar la galeria. Revisa la configuracion de Cloudinary y que el listado publico de recursos este habilitado.",
       );
     } finally {
       setGalleryLoading(false);
+      setGalleryRefreshing(false);
     }
   };
 
@@ -135,14 +214,18 @@ const Fotos = () => {
     try {
       setUploading(true);
       setUploadError("");
+      setUploadSummary({
+        total: files.length,
+        completed: 0,
+      });
 
-      await Promise.all(
+      const uploadResults = await Promise.allSettled(
         files.map(async (file, index) => {
           const previewImage = previewImages[index];
           const formData = new FormData();
           formData.append("file", file);
           formData.append("upload_preset", UPLOAD_PRESET);
-          formData.append("tags", GALLERY_TAG);
+          formData.append("tags", GALLERY_KEY);
 
           if (FOLDER) {
             formData.append("folder", FOLDER);
@@ -161,23 +244,75 @@ const Fotos = () => {
           }
 
           const data = await response.json();
-          replacePreviewImage(previewImage.id, normalizeImage(data));
+          const uploadedImage = normalizeImage(data);
+
+          updatePreviewStatus(
+            previewImage.id,
+            "processing",
+            "Preparando imagen...",
+          );
+
+          try {
+            await preloadImage(uploadedImage.thumbUrl);
+          } catch (thumbError) {
+            await preloadImage(uploadedImage.sourceUrl || uploadedImage.fullUrl);
+            uploadedImage.thumbUrl = uploadedImage.sourceUrl || uploadedImage.fullUrl;
+          }
+
+          replacePreviewImage(previewImage.id, uploadedImage);
           URL.revokeObjectURL(previewImage.thumbUrl);
+          setUploadSummary((currentSummary) => ({
+            ...currentSummary,
+            completed: currentSummary.completed + 1,
+          }));
         }),
       );
 
-      void loadGallery();
+      const failedUploads = uploadResults.filter(
+        (result) => result.status === "rejected",
+      );
+
+      if (failedUploads.length > 0) {
+        uploadResults.forEach((result, index) => {
+          const previewImage = previewImages[index];
+
+          if (result.status === "rejected" && previewImage) {
+            updatePreviewStatus(
+              previewImage.id,
+              "error",
+              "No se ha podido subir esta imagen.",
+            );
+          }
+        });
+
+        setUploadError(
+          failedUploads.length === files.length
+            ? "No se ha podido subir ninguna imagen. Revisa el preset de Cloudinary, el tamaño del archivo o tu conexion."
+            : "Algunas imagenes no se han podido subir. Las marcadas en rojo necesitan volver a intentarse.",
+        );
+      }
+
+      window.setTimeout(() => {
+        void loadGallery();
+      }, 1800);
     } catch (error) {
       previewImages.forEach((previewImage) => {
-        removePreviewImage(previewImage.id);
-        URL.revokeObjectURL(previewImage.thumbUrl);
+        updatePreviewStatus(
+          previewImage.id,
+          "error",
+          "Se ha producido un error durante la subida.",
+        );
       });
       setUploadError(
-        "No he podido subir las imagenes. Comprueba el upload preset de Cloudinary y que permita subidas no firmadas.",
+        "Se ha producido un error durante la subida. Revisa la configuracion y vuelve a intentarlo.",
       );
     } finally {
       event.target.value = "";
       setUploading(false);
+      setUploadSummary({
+        total: 0,
+        completed: 0,
+      });
     }
   };
 
@@ -201,6 +336,11 @@ const Fotos = () => {
           onChange={uploadFiles}
         />
         {uploadError ? <p className="subida-mensaje">{uploadError}</p> : null}
+        {uploading && uploadSummary.total > 0 ? (
+          <p className="subida-estado">
+            {uploadSummary.completed} de {uploadSummary.total} listas
+          </p>
+        ) : null}
         {!isConfigured ? (
           <p className="subida-mensaje">
             Falta configurar Cloudinary para subir imagenes.
@@ -214,6 +354,9 @@ const Fotos = () => {
         {galleryLoading ? (
           <p className="galeria-feedback">Cargando imagenes...</p>
         ) : null}
+        {!galleryLoading && galleryRefreshing ? (
+          <p className="galeria-feedback">Actualizando galeria...</p>
+        ) : null}
         {!galleryLoading && !galleryError && images.length === 0 ? (
           <p className="galeria-feedback">Aun no hay imagenes.</p>
         ) : null}
@@ -221,11 +364,23 @@ const Fotos = () => {
           {images.map((image) => (
             <div
               key={image.id}
-              className={`foto-card ${image.isUploading ? "foto-card-uploading" : ""}`}
+              className={`foto-card ${
+                image.status === "uploading" ? "foto-card-uploading" : ""
+              } ${
+                image.status === "processing" ? "foto-card-processing" : ""
+              } ${image.status === "error" ? "foto-card-error" : ""}`}
             >
               <img src={image.thumbUrl} alt={image.alt} loading="lazy" />
-              {image.isUploading ? (
+              {image.status === "uploading" ? (
                 <span className="foto-card-estado">Subiendo...</span>
+              ) : null}
+              {image.status === "processing" ? (
+                <span className="foto-card-estado">Preparando...</span>
+              ) : null}
+              {image.status === "error" ? (
+                <span className="foto-card-estado foto-card-estado-error">
+                  {image.errorMessage || "Error al subir"}
+                </span>
               ) : null}
             </div>
           ))}
