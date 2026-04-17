@@ -61,6 +61,7 @@ const preloadImage = (src) =>
 const Fotos = () => {
   const inputRef = useRef(null);
   const [images, setImages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [galleryLoading, setGalleryLoading] = useState(true);
   const [galleryRefreshing, setGalleryRefreshing] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -192,6 +193,26 @@ const Fotos = () => {
   useEffect(() => {
     loadGallery();
   }, []);
+
+  useEffect(() => {
+    if (!selectedImage) {
+      return undefined;
+    }
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setSelectedImage(null);
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [selectedImage]);
 
   const openPicker = () => {
     if (!isConfigured) {
@@ -362,13 +383,19 @@ const Fotos = () => {
         ) : null}
         <article className="container-fotos">
           {images.map((image) => (
-            <div
+            <button
               key={image.id}
+              type="button"
               className={`foto-card ${
                 image.status === "uploading" ? "foto-card-uploading" : ""
               } ${
                 image.status === "processing" ? "foto-card-processing" : ""
               } ${image.status === "error" ? "foto-card-error" : ""}`}
+              onClick={() =>
+                image.status === "ready" ? setSelectedImage(image) : null
+              }
+              disabled={image.status !== "ready"}
+              aria-label={`Ver ${image.alt}`}
             >
               <img src={image.thumbUrl} alt={image.alt} loading="lazy" />
               {image.status === "uploading" ? (
@@ -382,10 +409,39 @@ const Fotos = () => {
                   {image.errorMessage || "Error al subir"}
                 </span>
               ) : null}
-            </div>
+            </button>
           ))}
         </article>
       </section>
+
+      {selectedImage ? (
+        <div
+          className="foto-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Vista ampliada de la imagen"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div
+            className="foto-modal-contenido"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="foto-modal-cerrar"
+              onClick={() => setSelectedImage(null)}
+              aria-label="Cerrar imagen"
+            >
+              ×
+            </button>
+            <img
+              className="foto-modal-imagen"
+              src={selectedImage.fullUrl || selectedImage.sourceUrl}
+              alt={selectedImage.alt}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

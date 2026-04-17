@@ -1,5 +1,4 @@
 import Portada from "../../componentes/Portada/Portada";
-import Countdown from "../../componentes/CountDown/Countdown";
 import "./Home.css";
 import { NavLink } from "react-router-dom";
 
