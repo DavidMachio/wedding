@@ -1,0 +1,11 @@
+.container-evento{
+    min-height: calc(100vh - 70px);
+    width: 100vw;
+    background-color: var(--primary);
+}
+.container-evento img {
+    width: 100vw;
+}
+
+
+

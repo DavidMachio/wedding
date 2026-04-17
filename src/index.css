@@ -1,0 +1,39 @@
+@font-face {
+  font-family: 'Relationship of mélodrame';
+  src: url('/src/assets/fonts/Relationship of mélodrame.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+
+
+:root {
+  --primary: #364224;
+  --secondary: #ffffff;
+  --tertiary: #d6e9d6;
+  --font-primary: "Baskervville", serif;
+  --font-secondary: "MonteCarlo", serif;
+  --font-terciary: 'Relationship of mélodrame', serif;
+ 
+
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  background-color: var(--secondary);
+  color: var(--primary);
+}
+ul {
+  list-style-type: none;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+p{
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}

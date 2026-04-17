@@ -1,0 +1,35 @@
+.section-recomendados {
+  display: flex;
+  width: 100vw;
+  overflow: scroll;
+  margin-bottom: 40px;
+}
+.recomendados {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+  padding: 20px;
+}
+.recomendados-card {
+  height: 300px;
+  width: 250px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.834);
+  border-radius: 20px;
+  position: relative;
+}
+.recomendados-card img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+}
+.recomendados-card h3 {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  text-align: center;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.725);
+  color: var(--secondary);
+  border-radius: 20px 20px 0 0;
+}

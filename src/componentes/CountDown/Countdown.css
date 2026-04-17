@@ -1,0 +1,30 @@
+.section-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  justify-content: center;
+  width: 100vw;
+}
+.section-countdown{
+color: var(--primary);}
+
+.article-countdown {
+  display: flex;
+
+  gap: 10px;
+}
+.div-date-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+}
+.numerico-countdown {
+  font-size: 40px;
+  color: var(--primary);
+}
+.texto-countdown {
+  color: var(--primary);
+}

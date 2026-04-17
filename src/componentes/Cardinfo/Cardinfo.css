@@ -1,0 +1,36 @@
+.article-cardinfo{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+color: var(--tertiary);
+gap: 20px;
+
+}
+.div-cardinfo{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.cardinfo-title{
+    text-align: center;
+    font-size: 50px;
+}
+
+.cardinfo-hora{
+    text-align: center;
+        font-size: 30px;
+
+}
+
+.mapa{
+    width: 100%;
+    border: none;
+}
+.button-map{
+    width: 100px;
+    height: 30px;
+    border: none;
+    color: var(--primary);
+    background-color: var(--tertiary);
+}

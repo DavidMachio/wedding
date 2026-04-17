@@ -1,0 +1,52 @@
+.bannerdown {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: auto;
+}
+.bannerdown-cover {
+  width: 100vw;
+  height: 500px;
+  object-fit: cover;
+}
+.bannerdown-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.bannerdown-text h2 {
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-size: 40px;
+  text-transform: uppercase;
+}
+.bannerdown-info {
+  background-color: rgba(0, 0, 0, 0.574);
+  border-radius: 20px;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 10px 10px;
+  width: 70vw;
+  height: 280px;
+}
+.light {
+  height: 50px;
+  width: 150px;
+  border: 1px solid;
+  border-radius: 10px;
+  background-color: transparent;
+  color: var(--secondary);
+  text-transform: uppercase;
+}
+.light:hover {
+  box-shadow: 0 0 10px;
+  scale: 110%;
+}
