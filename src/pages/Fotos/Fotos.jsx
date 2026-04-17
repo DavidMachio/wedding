@@ -23,6 +23,20 @@ const normalizeImage = (resource) => ({
   thumbUrl: buildDeliveryUrl(resource, "f_auto,q_auto,c_fill,g_auto,w_700,h_700"),
 });
 
+const createPreviewImage = (file) => {
+  const previewUrl = URL.createObjectURL(file);
+
+  return {
+    id: `local-${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2)}`,
+    alt: file.name || "Foto de la boda",
+    createdAt: new Date().toISOString(),
+    fullUrl: previewUrl,
+    thumbUrl: previewUrl,
+    isLocalPreview: true,
+    isUploading: true,
+  };
+};
+
 const Fotos = () => {
   const inputRef = useRef(null);
   const [images, setImages] = useState([]);
@@ -45,6 +59,18 @@ const Fotos = () => {
         (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
       );
     });
+  };
+
+  const replacePreviewImage = (previewId, nextImage) => {
+    setImages((currentImages) =>
+      currentImages.map((image) => (image.id === previewId ? nextImage : image)),
+    );
+  };
+
+  const removePreviewImage = (previewId) => {
+    setImages((currentImages) =>
+      currentImages.filter((image) => image.id !== previewId),
+    );
   };
 
   const loadGallery = async () => {
@@ -103,12 +129,16 @@ const Fotos = () => {
       return;
     }
 
+    const previewImages = files.map(createPreviewImage);
+    mergeImages(previewImages);
+
     try {
       setUploading(true);
       setUploadError("");
 
-      const uploadedImages = await Promise.all(
-        files.map(async (file) => {
+      await Promise.all(
+        files.map(async (file, index) => {
+          const previewImage = previewImages[index];
           const formData = new FormData();
           formData.append("file", file);
           formData.append("upload_preset", UPLOAD_PRESET);
@@ -131,13 +161,17 @@ const Fotos = () => {
           }
 
           const data = await response.json();
-          return normalizeImage(data);
+          replacePreviewImage(previewImage.id, normalizeImage(data));
+          URL.revokeObjectURL(previewImage.thumbUrl);
         }),
       );
 
-      mergeImages(uploadedImages);
-      await loadGallery();
+      void loadGallery();
     } catch (error) {
+      previewImages.forEach((previewImage) => {
+        removePreviewImage(previewImage.id);
+        URL.revokeObjectURL(previewImage.thumbUrl);
+      });
       setUploadError(
         "No he podido subir las imagenes. Comprueba el upload preset de Cloudinary y que permita subidas no firmadas.",
       );
@@ -185,8 +219,14 @@ const Fotos = () => {
         ) : null}
         <article className="container-fotos">
           {images.map((image) => (
-            <div key={image.id} className="foto-card">
+            <div
+              key={image.id}
+              className={`foto-card ${image.isUploading ? "foto-card-uploading" : ""}`}
+            >
               <img src={image.thumbUrl} alt={image.alt} loading="lazy" />
+              {image.isUploading ? (
+                <span className="foto-card-estado">Subiendo...</span>
+              ) : null}
             </div>
           ))}
         </article>

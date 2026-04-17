@@ -66,6 +66,7 @@
   width: 100%;
   aspect-ratio: 1 / 1;
   overflow: hidden;
+  position: relative;
 }
 
 .foto-card img {
@@ -73,6 +74,23 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.foto-card-uploading img {
+  opacity: 0.6;
+}
+
+.foto-card-estado {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  background-color: rgba(54, 66, 36, 0.85);
+  color: var(--secondary);
+  padding: 6px 10px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 @media (max-width: 600px) {
