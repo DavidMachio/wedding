@@ -1,19 +1,86 @@
-.article-subida{
-    background-color: var(--secondary);
-    height: 200px;
+.fotos-main {
+  padding-bottom: 32px;
+}
+
+.article-subida {
+  background-color: var(--secondary);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 20px;
+}
+
+.subida-boton {
+  border: 1px solid var(--primary);
+  background-color: var(--primary);
+  color: var(--secondary);
+  padding: 14px 24px;
+  font-family: var(--font-primary);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.subida-boton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+.subida-boton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.subida-input {
+  display: none;
+}
+
+.subida-mensaje,
+.galeria-feedback {
+  font-size: 14px;
+  text-align: center;
+}
+
+.article-fotos {
+  padding: 0 20px;
 }
 
 .container-fotos {
-    background-color: blue;
-    padding: 2px;
-
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 columnas */
-    gap: 2px;
+  padding: 2px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
 }
 
-.container-fotos div {
-    background-color: blanchedalmond;
+.foto-card {
+  background-color: var(--tertiary);
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.foto-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 600px) {
+  .subida-boton {
     width: 100%;
-    aspect-ratio: 1 / 1; /* 🔥 hace que sean cuadrados */
+  }
+
+  .container-fotos {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
