@@ -182,7 +182,7 @@ const Fotos = () => {
       syncGallery(parsedImages);
     } catch (error) {
       setGalleryError(
-        "No he podido cargar la galeria. Revisa la configuracion de Cloudinary y que el listado publico de recursos este habilitado.",
+        "¿Quieres ser el primero en añadir una foto?.",
       );
     } finally {
       setGalleryLoading(false);
