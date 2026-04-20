@@ -8,6 +8,8 @@ const Home = () => {
       <Portada />
       <section className="seccion-detalles">
         <section className="section-info ceremonia">
+                    <img className="fotofondo" src="textura2.avif" alt="" />
+
           <h2>Ceremonia</h2>
           <p>13:00 h</p>
           <p>Ayuntamiento de El Viso de San Juan</p>
@@ -30,7 +32,7 @@ const Home = () => {
           </a>
         </section>
         <section className="section-info asistencia">
-          <img src="textura.jpg" alt="" />
+          <img className="fotofondo" src="textura2.avif" alt="" />
 
           <h2>Asistencia</h2>
           <p>¿Te apetece acompañarnos en este día tan importante?</p>

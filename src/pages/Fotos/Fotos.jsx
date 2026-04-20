@@ -340,6 +340,10 @@ const Fotos = () => {
   return (
     <div className="fotos-main">
       <section className="article-subida">
+        <img className="fotofondo" src="textura2.avif" alt="" />
+        <h2>DAVID & CANDELA</h2>
+        <h3>08 Mayo 2026</h3>
+        <h2>Gracias por compartir tus fotos</h2>
         <button
           className="subida-boton"
           type="button"
@@ -370,7 +374,6 @@ const Fotos = () => {
       </section>
 
       <section className="article-fotos">
-        <h4>Imágenes</h4>
         {galleryError ? <p className="galeria-feedback">{galleryError}</p> : null}
         {galleryLoading ? (
           <p className="galeria-feedback">Cargando imagenes...</p>

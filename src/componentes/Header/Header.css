@@ -1,5 +1,5 @@
 header {
-  color: var(--tertiary);
+  color: var(--secondary);
   background-color: var(--primary);
   position: sticky;
   top: 0;
@@ -92,7 +92,7 @@ header button img {
     justify-content: center;
   }
   header li:hover {
-    background-color: var(--tertiary);
+    background-color: var(--secondary);
     color: var(--primary);
     transition: 0.6s;
   }

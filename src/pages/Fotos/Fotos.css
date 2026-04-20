@@ -3,7 +3,6 @@
 }
 
 .article-subida {
-  background-color: var(--secondary);
   min-height: 200px;
   display: flex;
   flex-direction: column;
@@ -11,6 +10,8 @@
   align-items: center;
   gap: 12px;
   padding: 24px 20px;
+  position: relative;
+  overflow: hidden;
 }
 
 .subida-boton {
@@ -63,7 +64,7 @@
 }
 
 .article-fotos {
-  padding: 0 20px;
+  padding:  20px;
 }
 
 .container-fotos {
@@ -148,7 +149,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  z-index: 30;
+  z-index: 100;
   animation: modal-fade 0.22s ease;
   backdrop-filter: blur(6px);
 }
@@ -211,12 +212,10 @@
 }
 
 @media (max-width: 600px) {
-  .subida-boton {
-    width: 100%;
-  }
+  
 
   .container-fotos {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .foto-modal {

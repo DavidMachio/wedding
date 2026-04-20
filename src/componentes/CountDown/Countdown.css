@@ -5,6 +5,8 @@
   justify-content: center;
   justify-content: center;
   width: 100vw;
+  gap: 10px;
+  padding: 30px;
 }
 .section-countdown{
 color: var(--primary);}
